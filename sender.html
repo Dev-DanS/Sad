@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Test #1</title>
+    <link rel="icon" href="../img/logo3.png" type="image/png" />
+    <!-- <link rel="stylesheet" href="sender.css"> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
+        rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/965a209c77.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        #map {
+    width: 100%;
+    height: 60vh;
+}
+
+body {
+    background-color: #03b14e !important;
+}
+
+.cancel {
+    display: flex;
+    justify-content: center;
+}
+
+.cancel-btn {
+    margin-top: 3vh;
+    background-color: #ff0000;
+    width: 85vw;
+    height: 40px;
+    border-radius: 30px;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border: none;
+    color: white;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.cancel-btn:hover {
+    background-color: #800000;
+}
+
+.rideInfo {
+    background-color: white;
+    border-radius: 0 0 20px 20px;
+}
+
+.driverInfo {
+    display: flex;
+    align-items: center;
+}
+
+.infoText {
+    margin-left: 10px;
+    /* Adjust as needed */
+    display: flex;
+    /* Added */
+    justify-content: space-between;
+    /* Added */
+    width: 100%;
+    padding-right: 30px;
+}
+
+.driverName,
+.plateNumber {
+    display: inline;
+    margin: 0;
+}
+
+.plateNumber {
+    font-weight: 600;
+}
+
+.driverName {
+    font-size: small;
+}
+
+.rideData {
+    background-color: white;
+}
+
+.rideText {
+    margin-left: 10px;
+    /* Adjust as needed */
+    display: flex;
+    /* Added */
+    justify-content: space-between;
+    /* Added */
+    padding-right: 30px;
+}
+
+.otw,
+.time {
+    margin-bottom: 0;
+    font-weight: 700;
+    font-size: small;
+}
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg" style="background-color: #e3f2fd">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="commuter.php">
+                <img src="../img/Logo2.png" alt="Bootstrap" height="50" />
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"
+                style="background-color: #e3f2fd">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse text-center" id="navbarNav">
+                <ul class="navbar-nav nav-underline ms-auto me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="commuter.php">Home</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Dan
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Manage Account</a></li>
+                            <li>
+                                <hr class="dropdown-divider" />
+                            </li>
+                            <li><a class="dropdown-item" href="../php/logout.php" style="color: red;">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="map"></div>
+    <h5 id="accuracy"></h5>
+
+    <div class="rideData">
+        <div class="rideText">
+            <p class="otw">Estimated Time of Arrival</p>
+            <p class="time" id="time">Calculating...</p>
+        </div>
+    </div>
+    <div class="rideInfo">
+        <div class="driverInfo">
+            <img src="../img/jaja.jpg" alt="" style="width:50px; height: 50px; border-radius: 50%;">
+
+            <div class="infoText">
+                <p class="driverName">Hello World • 4.5 <i class="fa-solid fa-star fa-sm" data-value="1"
+                        style="color: #FFFF00;"></i></p>
+                <p class="plateNumber">XYZ 5678</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="cancel">
+        <button type="submit" class="cancel-btn" id="generateData">
+            Cancel Booking
+        </button>
+    </div>
+
+    <script>
+        const map = L.map('map', {
+            zoomControl: false,
+            doubleClickZoom: false
+        }).setView([0, 0], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        let pickupPoint;
+        // let dropoffPoint = { lat: 14.969750598785996, lng: 120.92664291012869 };
+        let dropoffPoint = { lat: 14.958627583238098, lng: 120.89392202853571 };
+        let driverLoc;
+        const dropoffMarker = L.marker([dropoffPoint.lat, dropoffPoint.lng]).addTo(map);
+
+        const marker = L.marker([0, 0]).addTo(map);
+        let accuracyCircle;
+
+        let intervalId;
+
+        let distance;
+        let durationMinutes;
+
+        function updateLocation(position) {
+            const { latitude, longitude, accuracy } = position.coords;
+            driverLoc = { lat: latitude, lng: longitude };
+
+            console.log('Current ', driverLoc);
+
+            marker.setLatLng([latitude, longitude]);
+
+            if (!accuracyCircle) {
+                accuracyCircle = L.circle([latitude, longitude], {
+                    radius: accuracy,
+                    color: 'blue',
+                    opacity: 0.5,
+                    fillOpacity: 0.1
+                }).addTo(map);
+            } else {
+                accuracyCircle.setLatLng([latitude, longitude]).setRadius(accuracy);
+            }
+
+            map.setView([latitude, longitude], 18);
+
+            document.getElementById('accuracy').innerText = `Accuracy: ${accuracy} meters`;
+            Routing(driverLoc);
+
+        }
+
+        let routeLayer;
+
+        function Routing(driverLoc) {
+            const url = `https://router.project-osrm.org/route/v1/driving/${driverLoc.lng},${driverLoc.lat};${dropoffPoint.lng},${dropoffPoint.lat}?overview=full&geometries=geojson`;
+
+            axios.get(url)
+                .then(response => {
+                    distance = (response.data.routes[0].distance / 1000).toFixed(2);
+                    const averageSpeed = 15;
+                    const durationHours = distance / averageSpeed;
+                    durationMinutes = Math.round(durationHours * 60);
+
+                    const routeCoordinates = response.data.routes[0].geometry.coordinates;
+                    const geojsonRoute = {
+                        type: "Feature",
+                        properties: {},
+                        geometry: {
+                            type: "LineString",
+                            coordinates: routeCoordinates
+                        }
+                    };
+
+                    if (routeLayer) map.removeLayer(routeLayer);
+
+                    routeLayer = L.geoJSON(geojsonRoute, {
+                        style: {
+                            weight: 3,
+                            color: '#03b14e'
+                        }
+                    }).addTo(map);
+
+                    const boundsWithPadding = routeLayer.getBounds().pad(0.1); 
+                    document.getElementById('time').innerText = `${durationMinutes} min(s)`;
+
+                })
+                .catch(error => {
+                    console.error('Error fetching route from OSRM:', error);
+                });
+        }
+
+
+
+        function handleError(error) {
+            console.error('Error getting location:', error);
+        }
+
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+        };
+
+        function startTracking() {
+            const watchId = navigator.geolocation.watchPosition(updateLocation, handleError, options);
+
+            window.addEventListener('beforeunload', () => {
+                navigator.geolocation.clearWatch(watchId);
+            });
+        }
+
+        startTracking();
+    </script>
+
+
+
+</body>
+
+</html>
